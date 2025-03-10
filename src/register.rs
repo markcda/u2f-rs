@@ -1,7 +1,7 @@
 use byteorder::{BigEndian, ByteOrder};
 use bytes::{BufMut, Bytes};
 use openssl::sha::sha256;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 
 use crate::messages::RegisteredKey;
@@ -12,7 +12,7 @@ use crate::util::*;
 type Result<T> = ::std::result::Result<T, U2fError>;
 
 // Single enrolment or pairing between an application and a token.
-#[derive(Serialize, Clone)]
+#[derive(Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Registration {
   pub key_handle: Vec<u8>,
