@@ -1,4 +1,4 @@
-use base64::{URL_SAFE_NO_PAD, decode_config, encode_config};
+use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use chrono::{DateTime, TimeDelta, Utc};
 use serde::{Deserialize, Serialize};
 
@@ -15,7 +15,7 @@ pub struct U2f {
   app_id: String,
 }
 
-#[derive(Deserialize, Serialize, Clone, Default)]
+#[derive(Deserialize, Serialize, Clone, PartialEq, Eq, Hash, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Challenge {
   pub app_id: String,
@@ -34,7 +34,7 @@ impl U2f {
 
     let challenge_bytes = generate_challenge(32)?;
     let challenge = Challenge {
-      challenge: encode_config(&challenge_bytes, URL_SAFE_NO_PAD),
+      challenge: URL_SAFE_NO_PAD.encode(&challenge_bytes),
       timestamp: format!("{:?}", utc),
       app_id: self.app_id.clone(),
     };
@@ -69,8 +69,8 @@ impl U2f {
       return Err(U2fError::ChallengeExpired);
     }
 
-    let registration_data: Vec<u8> = decode_config(&response.registration_data[..], URL_SAFE_NO_PAD).unwrap();
-    let client_data: Vec<u8> = decode_config(&response.client_data[..], URL_SAFE_NO_PAD).unwrap();
+    let registration_data: Vec<u8> = URL_SAFE_NO_PAD.decode(&response.registration_data[..]).unwrap();
+    let client_data: Vec<u8> = URL_SAFE_NO_PAD.decode(&response.client_data[..]).unwrap();
 
     parse_registration(challenge.app_id, client_data, registration_data)
   }
@@ -94,7 +94,7 @@ impl U2f {
 
     U2fSignRequest {
       app_id: self.app_id.clone(),
-      challenge: encode_config(challenge.challenge.as_bytes(), URL_SAFE_NO_PAD),
+      challenge: URL_SAFE_NO_PAD.encode(challenge.challenge.as_bytes()),
       registered_keys: keys,
     }
   }
@@ -115,9 +115,9 @@ impl U2f {
     }
 
     let client_data: Vec<u8> =
-      decode_config(&sign_resp.client_data[..], URL_SAFE_NO_PAD).map_err(|_e| U2fError::InvalidClientData)?;
+      URL_SAFE_NO_PAD.decode(&sign_resp.client_data[..]).map_err(|_e| U2fError::InvalidClientData)?;
     let sign_data: Vec<u8> =
-      decode_config(&sign_resp.signature_data[..], URL_SAFE_NO_PAD).map_err(|_e| U2fError::InvalidSignatureData)?;
+      URL_SAFE_NO_PAD.decode(&sign_resp.signature_data[..]).map_err(|_e| U2fError::InvalidSignatureData)?;
 
     let public_key = reg.pub_key;
 

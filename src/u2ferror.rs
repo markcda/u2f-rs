@@ -16,7 +16,8 @@ pub enum U2fError {
   CounterTooLow,
   OpenSSLNoCurveName,
   InvalidPublicKey,
-  OpenSSLError(openssl::error::ErrorStack),
+  WebpkiError(webpki::Error),
+  RingError(ring::error::Unspecified),
 }
 
 impl fmt::Display for U2fError {
@@ -36,7 +37,8 @@ impl fmt::Display for U2fError {
       U2fError::CounterTooLow => write!(f, "Counter too low"),
       U2fError::InvalidPublicKey => write!(f, "Invalid public key"),
       U2fError::OpenSSLNoCurveName => write!(f, "OpenSSL no curve name"),
-      U2fError::OpenSSLError(e) => e.fmt(f),
+      U2fError::WebpkiError(e) => e.fmt(f),
+      U2fError::RingError(e) => e.fmt(f),
     }
   }
 }

@@ -1,6 +1,6 @@
 use byteorder::{BigEndian, ByteOrder};
-use bytes::{BufMut, Bytes};
-use openssl::sha::sha256;
+use bytes::Bytes;
+use sha2::{Digest, Sha256};
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 
@@ -21,6 +21,12 @@ pub struct Registration {
   // AttestationCert can be null for Authenticate requests.
   pub attestation_cert: Option<Vec<u8>>,
   pub device_name: Option<String>,
+}
+
+fn sha256(data: &[u8]) -> Vec<u8> {
+    let mut hasher = Sha256::new();
+    hasher.update(data);
+    hasher.finalize().to_vec()
 }
 
 pub fn parse_registration(app_id: String, client_data: Vec<u8>, registration_data: Vec<u8>) -> Result<Registration> {
@@ -54,10 +60,10 @@ pub fn parse_registration(app_id: String, client_data: Vec<u8>, registration_dat
   let client_data_hash = sha256(&client_data[..]);
 
   let mut msg = vec![0x00]; // A byte reserved for future use [1 byte] with the value 0x00
-  msg.put(app_id_hash.as_ref());
-  msg.put(client_data_hash.as_ref());
-  msg.put(key_handle.clone());
-  msg.put(public_key.clone());
+  msg.extend_from_slice(app_id_hash.as_ref());
+  msg.extend_from_slice(client_data_hash.as_ref());
+  msg.extend_from_slice(key_handle.as_ref());
+  msg.extend_from_slice(public_key.as_ref());
 
   // The signature is to be verified by the relying party using the public key certified
   // in the attestation certificate.
@@ -67,11 +73,7 @@ pub fn parse_registration(app_id: String, client_data: Vec<u8>, registration_dat
     return Err(U2fError::BadCertificate);
   }
 
-  let verified = cerificate_public_key.verify_signature(&signature[..], &msg[..])?;
-
-  if !verified {
-    return Err(U2fError::BadCertificate);
-  }
+  cerificate_public_key.verify_signature(&signature[..], &msg[..])?;
 
   let registration = Registration {
     key_handle: key_handle[..].to_vec(),

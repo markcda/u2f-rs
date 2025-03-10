@@ -1,4 +1,4 @@
-use base64::{URL_SAFE_NO_PAD, encode_config};
+use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use bytes::Bytes;
 use chrono::{DateTime, TimeDelta, Utc};
 use openssl::rand;
@@ -54,6 +54,6 @@ pub fn asn_length(mem: Bytes) -> Result<usize> {
 }
 
 pub fn get_encoded(data: &[u8]) -> String {
-  let encoded: String = encode_config(data, URL_SAFE_NO_PAD);
+  let encoded: String = URL_SAFE_NO_PAD.encode(data);
   encoded.trim_end_matches('=').to_string()
 }
