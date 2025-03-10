@@ -12,7 +12,7 @@ use crate::util::*;
 type Result<T> = ::std::result::Result<T, U2fError>;
 
 // Single enrolment or pairing between an application and a token.
-#[derive(Deserialize, Serialize, Clone)]
+#[derive(Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 #[serde(rename_all = "camelCase")]
 pub struct Registration {
   pub key_handle: Vec<u8>,
