@@ -10,6 +10,7 @@ type Result<T> = ::std::result::Result<T, U2fError>;
 pub const U2F_V2: &str = "U2F_V2";
 
 // Generates a challenge from a secure, random source.
+#[cfg(feature = "rand")]
 pub fn generate_challenge(size: usize) -> Result<Vec<u8>> {
     use rand::{RngCore, SeedableRng, rngs::StdRng};
     let mut rng = StdRng::from_os_rng();
