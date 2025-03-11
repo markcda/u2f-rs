@@ -1,6 +1,6 @@
 [package]
 name = "u2f"
-version = "0.2.5"
+version = "0.2.6"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 authors = ["Flavio Oliveira <flavio@wisespace.io>", "Klimenty Titov <aclo.create@gmail.com>"]
@@ -31,8 +31,8 @@ untrusted = "0.7"
 webpki = "0.22"
 
 [target.'cfg(any(target_arch = "wasm32", target_arch = "wasm64"))'.dependencies]
-ring = { version = "0.16", features = ["wasm32_unknown_unknown_js"] }
+ring = { version = "0.17", features = ["wasm32_unknown_unknown_js"] }
 
 [target.'cfg(not(any(target_arch = "wasm32", target_arch = "wasm64")))'.dependencies]
 rand = { optional = true, version = "0.9", features = ["std_rng"] }
-ring = "0.16"
+ring = "0.17"
